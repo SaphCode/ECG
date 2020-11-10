@@ -17,6 +17,8 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <filesystem>
+#include <iostream>
 
 // Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
 #include <GL/glew.h>
@@ -170,10 +172,13 @@ void testUpdateRender(GLFWwindow* window, Teapot& tp) {
 
 int main(int argc, char** argv)
 {
+
+    std::filesystem::path cwd = std::filesystem::current_path();
+    std::cout << cwd.string() << std::endl;
 	/* --------------------------------------------- */
 	// Load settings.ini
 	/* --------------------------------------------- */
-	INIReader reader("assets/settings.ini");
+	INIReader reader("../assets/settings.ini");
 
 	// load dimensions of window
 	const int width = reader.GetInteger("window", "width", 800);
@@ -267,7 +272,7 @@ int main(int argc, char** argv)
     */
     
 
-    std::string shaderDir = "./assets/";
+    std::string shaderDir = "../assets/";
     ShaderHandler sh;
 
     Shader vertexShader(ShaderType::VERTEX, shaderDir + "teapot.vert");
@@ -480,7 +485,7 @@ int main(int argc, char** argv)
                 std::cout << "NO MOUSE INPUT ALLOWED." << std::endl;
                 std::cout << "Test scene 2 start." << std::endl;
                 std::cout << "Rotate 45 deg around pos z-axis." << std::endl;
-                blueTeapot.rotate(zHat, 45.f);
+                blueTeapot.setRotation(zHat, 45.f);
                 testUpdateRender(window, blueTeapot);
                 std::cout << "Rotated. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));

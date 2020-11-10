@@ -11,10 +11,10 @@ Teapot::Teapot(glm::vec3 position, glm::vec3 color, glm::vec3 scale, glm::vec3 r
 
 void Teapot::update()
 {
+	Actor::update();
 	//glUniform3fv(pos_lq, 1, glm::value_ptr(m_position));
 	//glUniform3fv(pos_lq, 1, glm::value_ptr(m_position));
-	glm::mat4 model = getModelMatrix();
-	glUniformMatrix4fv(model_lq, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(model_lq, 1, GL_FALSE, glm::value_ptr(m_model));
 	glUniform3fv(color_lq, 1, glm::value_ptr(m_color));
 }
 
