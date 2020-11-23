@@ -27,6 +27,8 @@ public:
 		 return m_source;
 	}
 
+	static const std::string SHADER_DIR;
+
 private:
 	const ShaderType m_type;
 	std::string m_source;

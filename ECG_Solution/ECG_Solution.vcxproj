@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="src\Shape.cpp" />
+    <ClCompile Include="src\Rectangle.cpp" />
     <ClCompile Include="src\Coordinates.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\MouseInput.cpp" />
     <ClCompile Include="src\Actor.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\Teapot.cpp" />
+    <ClInclude Include="src\Shape.h" />
+    <ClInclude Include="src\Rectangle.h" />
     <ClInclude Include="src\Coordinates.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\MouseInput.h" />

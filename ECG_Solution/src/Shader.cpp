@@ -16,3 +16,5 @@ std::string Shader::readSourceFromFile(std::string path)
 	buffer << file.rdbuf();
 	return buffer.str();
 }
+
+const std::string Shader::SHADER_DIR = "../assets/";

@@ -12,6 +12,8 @@
 #include "MouseInput.h"
 #include "Camera.h"
 #include "Coordinates.h"
+#include "Sphere.h"
+#include "Rectangle.h"
 
 #include <sstream>
 #include <vector>
@@ -30,8 +32,8 @@
 /*
 // GLOBALS
 */
-bool testScene1 = false;
-bool testScene2 = false;
+bool wireFrameMode = false;
+bool culling = true;
 
 /* --------------------------------------------- */
 // Prototypes
@@ -44,10 +46,24 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     // if escape is pressed, set the window close flag to GLFW_TRUE
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-    if (key == GLFW_KEY_A && action == GLFW_PRESS)
-        testScene1 = true;
-    if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        testScene2 = true;
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+        if (wireFrameMode) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        wireFrameMode = !wireFrameMode;
+    }
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
+        if (culling) {
+            glDisable(GL_CULL_FACE);
+        }
+        else {
+            glEnable(GL_CULL_FACE);
+        }
+        culling = !culling;
+    }
 }
 
 static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, const char* msg) {
@@ -178,7 +194,7 @@ int main(int argc, char** argv)
 	/* --------------------------------------------- */
 	// Load settings.ini
 	/* --------------------------------------------- */
-	INIReader reader("../assets/settings.ini");
+	INIReader reader("assets/settings.ini");
 
 	// load dimensions of window
 	const int width = reader.GetInteger("window", "width", 800);
@@ -272,11 +288,11 @@ int main(int argc, char** argv)
     */
     
 
-    std::string shaderDir = "../assets/";
+    std::string shaderDir = "assets/";
     ShaderHandler sh;
 
-    Shader vertexShader(ShaderType::VERTEX, shaderDir + "teapot.vert");
-    Shader fragmentShader(ShaderType::FRAGMENT, shaderDir + "teapot.frag");
+    Shader vertexShader(ShaderType::VERTEX, shaderDir + "simpleGeometry.vert");
+    Shader fragmentShader(ShaderType::FRAGMENT, shaderDir + "simpleGeometry.frag");
 
     std::vector<Shader> shaders;
     shaders.push_back(vertexShader);
@@ -351,6 +367,8 @@ int main(int argc, char** argv)
     glfwSetMouseButtonCallback(window, MouseInput::mouse_button_callback);
     glfwSetScrollCallback(window, MouseInput::scroll_callback);
 
+    glEnable(GL_CULL_FACE);
+
 
 	/* --------------------------------------------- */
 	// Initialize scene and render loop
@@ -369,12 +387,13 @@ int main(int argc, char** argv)
         const glm::vec3 color_red(0.8, 0.1, 0.2); // red
         const glm::vec3 color_blue(0.4, 0.3, 0.8); // blue
 
-        Teapot redTeapot(glm::vec3(-1.5, -1.0, 0.0), color_red, glm::vec3(1, 2, 1), zHat, 0.f); // if worldUpVector then it looks right
-        Teapot blueTeapot(glm::vec3(1.5, 1.0, 0.0), color_blue, glm::vec3(1, 1, 1), zHat, 45.f);
+        GeomShape::Sphere sphere(glm::vec3(0,0,0), 0.6, glm::vec3(0.4,0.3,0.8), glm::vec3(1,1.7,1), zHat, 0.f, 16, 8);
+        GeomShape::Rectangle rect(glm::vec3(0, 0, 0), 1.2, 2.0, 1.2, glm::vec3(0.8, 0.1, 0.2), glm::vec3(1, 1, 1), upVector_world, 45.f);
+        rect.setPosition(glm::vec3(2.f, 0.f, 0.f));
 
         std::vector<std::unique_ptr<Actor>> actors;
-        actors.push_back(std::make_unique<Teapot>(std::move(redTeapot)));
-        actors.push_back(std::make_unique<Teapot>(std::move(blueTeapot)));
+        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphere)));
+        actors.push_back(std::make_unique<GeomShape::Rectangle>(std::move(rect)));
 
         float dPhi = (2 * 3.14159) / width;
         float dTheta = (2 * 3.14159) / height;
@@ -450,62 +469,6 @@ int main(int argc, char** argv)
             u_int projection_lq = 3;
             glUniformMatrix4fv(view_lq, 1, GL_FALSE, glm::value_ptr(viewMatrix));
             glUniformMatrix4fv(projection_lq, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-            if (testScene1) {
-                redTeapot.setPosition(glm::vec3(0.0, 0.0, 0.0));
-                int sleepTime = 2000;
-                std::cout << "NO MOUSE INPUT ALLOWED." << std::endl;
-                std::cout << "Test scene 1 start." << std::endl;
-                std::cout << "Scaling along y-axis by 2" << std::endl;
-                redTeapot.setScale(glm::vec3(1.0, 2.0, 1.0));
-                testUpdateRender(window, redTeapot);
-                
-                std::cout << "Scaled. Sleeping " << sleepTime/1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Travelling 1.5 to negative x." << std::endl;
-                redTeapot.setPosition(glm::vec3(-1.5, 0.0, 0.0));
-                testUpdateRender(window, redTeapot);
-                std::cout << "Done. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Travelling 1 to negative y." << std::endl;
-                redTeapot.setPosition(glm::vec3(-1.5, -1.0, 0.0));
-                testUpdateRender(window, redTeapot);
-                std::cout << "Done. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Test 1 complete." << std::endl;
-
-                testScene1 = false;
-            }
-            if (testScene2) {
-                blueTeapot.setPosition(glm::vec3(0.0, 0.0, 0.0));
-                int sleepTime = 2000;
-                std::cout << "NO MOUSE INPUT ALLOWED." << std::endl;
-                std::cout << "Test scene 2 start." << std::endl;
-                std::cout << "Rotate 45 deg around pos z-axis." << std::endl;
-                blueTeapot.setRotation(zHat, 45.f);
-                testUpdateRender(window, blueTeapot);
-                std::cout << "Rotated. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Travelling 1.5 to positive x." << std::endl;
-                blueTeapot.setPosition(glm::vec3(1.5, 0.0, 0.0));
-                testUpdateRender(window, blueTeapot);
-                std::cout << "Done. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Travelling 1 to positive y." << std::endl;
-                blueTeapot.setPosition(glm::vec3(1.5, 1.0, 0.0));
-                testUpdateRender(window, blueTeapot);
-                std::cout << "Done. Sleeping " << sleepTime / 1000 << " seconds." << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
-
-                std::cout << "Test 2 complete." << std::endl;
-
-                testScene2 = false;
-            }
 
             for (auto& a : actors) {
                 a->update();
