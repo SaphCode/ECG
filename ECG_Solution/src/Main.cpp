@@ -188,13 +188,18 @@ void testUpdateRender(GLFWwindow* window, Teapot& tp) {
 
 int main(int argc, char** argv)
 {
-
+    std::string assets("assets/");
     std::filesystem::path cwd = std::filesystem::current_path();
+    std::string laptop("ECG_Solution");
+
+    if (cwd.string().find(laptop)) {
+        assets = "../assets/";
+    }
     std::cout << cwd.string() << std::endl;
 	/* --------------------------------------------- */
 	// Load settings.ini
 	/* --------------------------------------------- */
-	INIReader reader("assets/settings.ini");
+    INIReader reader(assets + "settings.ini");
 
 	// load dimensions of window
 	const int width = reader.GetInteger("window", "width", 800);
@@ -288,7 +293,7 @@ int main(int argc, char** argv)
     */
     
 
-    std::string shaderDir = "assets/";
+    std::string shaderDir = assets;
     ShaderHandler sh;
 
     Shader vertexShader(ShaderType::VERTEX, shaderDir + "simpleGeometry.vert");

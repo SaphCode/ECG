@@ -33,7 +33,7 @@ void GeomShape::Rectangle::render()
 void GeomShape::Rectangle::createVertices()
 {
 	float x = m_width / 2;
-	float y = -m_height / 2;
+	float y = m_height / 2;
 	float z = m_depth / 2;
 
 	addVertex(x, y, z);
@@ -49,15 +49,6 @@ void GeomShape::Rectangle::createVertices()
 
 void GeomShape::Rectangle::createIndices()
 {
-	// left face
-	addIndex(1);
-	addIndex(4);
-	addIndex(5);
-
-	addIndex(5);
-	addIndex(2);
-	addIndex(1);
-
 	// front face
 	addIndex(0);
 	addIndex(1);
@@ -67,39 +58,49 @@ void GeomShape::Rectangle::createIndices()
 	addIndex(3);
 	addIndex(0);
 
-	// back face
+	// up face
+	addIndex(0);
 	addIndex(4);
-	addIndex(7);
-	addIndex(6);
-
-	addIndex(6);
 	addIndex(5);
-	addIndex(4);
+
+	addIndex(5);
+	addIndex(1);
+	addIndex(0);
 
 	// right face
-	addIndex(7);
+	addIndex(4);
 	addIndex(0);
 	addIndex(3);
 
 	addIndex(3);
-	addIndex(6);
-	addIndex(7);
-
-	// up face
 	addIndex(7);
 	addIndex(4);
-	addIndex(1);
 
-	addIndex(1);
-	addIndex(0);
+	// back face
+	addIndex(5);
+	addIndex(4);
 	addIndex(7);
 
-	// down face
-	addIndex(3);
-	addIndex(2);
+	addIndex(7);
+	addIndex(6);
 	addIndex(5);
 
+	// left face
+	addIndex(1);
 	addIndex(5);
 	addIndex(6);
+
+	// down face
+	addIndex(6);
+	addIndex(7);
 	addIndex(3);
+
+	addIndex(3);
+	addIndex(2);
+	addIndex(6);
+
+	// left face last piece
+	addIndex(6);
+	addIndex(2);
+	addIndex(1);
 }
