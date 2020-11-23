@@ -65,14 +65,14 @@ void GeomShape::Sphere::createVertices() {
 	float stackStep = M_PI / m_stackCount;
 
 	// from top to bottom
-	for (int stack = 0; stack <= m_stackCount; ++stack) {
+	for (int stack = 0; stack <= m_stackCount; stack++) {
 		// get the angle from the top (0 deg)
 		float stackAngle = stack * stackStep;
 
 		float y = m_radius * cos(stackAngle);
 		float xz_from_y_axis = m_radius * sin(stackAngle);
 
-		for (int sector = 0; sector <= m_sectorCount; ++sector) { // changed: <=
+		for (int sector = 0; sector <= m_sectorCount; sector++) { // changed: <=
 			// get the angle corresponding to the sector #
 			float sectorAngle = sector * sectorStep;
 

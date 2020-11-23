@@ -14,6 +14,7 @@
 #include "Coordinates.h"
 #include "Sphere.h"
 #include "Rectangle.h"
+#include "Cylinder.h"
 
 #include <sstream>
 #include <vector>
@@ -395,10 +396,13 @@ int main(int argc, char** argv)
         GeomShape::Sphere sphere(glm::vec3(0,0,0), 0.6, glm::vec3(0.4,0.3,0.8), glm::vec3(1,1.7,1), zHat, 0.f, 16, 8);
         GeomShape::Rectangle rect(glm::vec3(0, 0, 0), 1.2, 2.0, 1.2, glm::vec3(0.8, 0.1, 0.2), glm::vec3(1, 1, 1), upVector_world, 45.f);
         rect.setPosition(glm::vec3(2.f, 0.f, 0.f));
+        GeomShape::Cylinder cyl(glm::vec3(0, 0, 0), 0.6, 2, glm::vec3(0.2, 0.7, 0.4), glm::vec3(1, 1, 1), zHat, 0.f, 16);
+        cyl.setPosition(glm::vec3(-2.f, 0.f, 0.f));        
 
         std::vector<std::unique_ptr<Actor>> actors;
         actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphere)));
         actors.push_back(std::make_unique<GeomShape::Rectangle>(std::move(rect)));
+        actors.push_back(std::make_unique<GeomShape::Cylinder>(std::move(cyl)));
 
         float dPhi = (2 * 3.14159) / width;
         float dTheta = (2 * 3.14159) / height;
