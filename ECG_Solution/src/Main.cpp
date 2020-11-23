@@ -193,7 +193,7 @@ int main(int argc, char** argv)
     std::filesystem::path cwd = std::filesystem::current_path();
     std::string laptop("ECG_Solution");
 
-    if (cwd.string().find(laptop)) {
+    if (cwd.string().find(laptop) != std::string::npos) {
         assets = "../assets/";
     }
     std::cout << cwd.string() << std::endl;
@@ -265,34 +265,7 @@ int main(int argc, char** argv)
 
     /* --------------------------------------------- */
     // Create and compile shaders
-    /* --------------------------------------------- */
-
-    // Creating a uniform color.
-
-
-    //GLuint vao, vbo[1];
-
-    //const int color_nrows = std::extent<GLfloat[3][3], 0>::value;
-    //const int color_ncols = std::extent<GLfloat[3][3], 1>::value;
-    //const int color_elements = color_nrows * color_ncols;
-    //const u_int color_size = sizeof(GLfloat) * color_elements;
-
-    
-    
-    //const u_int ex_color_lq = 1;
-    
-
-    /*
-    glGenVertexArrays(1, &vao); // allocate & assigne vao
-    glBindVertexArray(vao); // bind as current used obj
-    glGenBuffers(1, vbo); // allocate and assign 1 vbo
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]); // first vbo is active buffer now
-    glBufferData(GL_ARRAY_BUFFER, color_size, firstTeapotColors, GL_STATIC_DRAW); // copy vertex data to buffer
-    glVertexAttribPointer(ex_color_lq, color_ncols, GL_FLOAT, GL_FALSE, 0, 0); // 3 cols per vertex, should be ncols,
-                                                                     // specifies where this data is going (1 here)
-    glEnableVertexAttribArray(ex_color_lq);
-    */
-    
+    /* --------------------------------------------- */    
 
     std::string shaderDir = assets;
     ShaderHandler sh;

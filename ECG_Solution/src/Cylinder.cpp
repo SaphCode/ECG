@@ -36,52 +36,57 @@ void GeomShape::Cylinder::render()
 void GeomShape::Cylinder::createVertices()
 {
 	float sectorStep = 2 * M_PI / m_sectorCount;
-
-	for (int i = 0; i <= 3; i++) {
-		float y = (i <= 1) ? -m_height / 2 : m_height / 2; // flipping because of wrong winding
+	addVertex(0, m_height / 2, 0);
+	for (int i = 0; i <= 1; i++) {
+		float y = (i == 0) ? m_height / 2 : -m_height / 2; // flipping because of wrong winding
 		for (int sector = 0; sector <= m_sectorCount; sector++) { // 
-			if (i == 0 || i == 3) {
-				addVertex(0, y, 0);
-			}
-			else {
-				float sectorAngle = sector * sectorStep;
-				float x = m_radius * cos(sectorAngle);
-				float z = m_radius * sin(sectorAngle);
+			float sectorAngle = sector * -sectorStep;
+			float x = m_radius * cos(sectorAngle);
+			float z = m_radius * sin(sectorAngle);
 
-				addVertex(x, y, z);
-			}
+			addVertex(x, y, z);
 		}
 	}
+	addVertex(0, -m_height / 2, 0);
 }
 
 void GeomShape::Cylinder::createIndices()
 {
-	unsigned int v1, v2;
-	for (int i = 0; i <= 2; i++) {
+	unsigned int startOfCircle, nextCircle;
 
-		v1 = i * (m_sectorCount + 1);
-		v2 = v1 + m_sectorCount + 1;
+	for (int sector = 0; sector < m_sectorCount; sector++) {
+		addIndex(0);
+		addIndex(sector + 1);
+		addIndex(sector + 2);
+	}
 
-		for (int sector = 0; sector < m_sectorCount; sector++) {
 
-			// indices
-			//  v1--v1+1
-			//  | \  |
-			//  |  \ |
-			//  v2--v2+1
-			if (i != 2) {
-				addIndex(v1 + sector);
-				addIndex(v2 + sector);
-				addIndex(v2 + sector + 1);
-			}
+	startOfCircle = 1;
+	for (int sector = 0; sector <= m_sectorCount; sector++) {
 
-			if (i != 0) { // make the circle
-				addIndex(v2 + sector + 1);
-				addIndex(v1 + sector + 1);
-				addIndex(v1 + sector);
-			}
+		nextCircle = startOfCircle + m_sectorCount;
 
-		}
+		// indices
+		//  v1--v1+1
+		//  | \  |
+		//  |  \ |
+		//  v2--v2+1
+		addIndex(startOfCircle + sector);
+		addIndex(nextCircle + sector);
+		addIndex(nextCircle + sector + 1);
+
+		addIndex(nextCircle + sector + 1);
+		addIndex(startOfCircle + sector + 1);
+		addIndex(startOfCircle + sector);
+
+	}
+
+
+	for (int sector = 0; sector < m_sectorCount; sector++) {
+		unsigned int start = 1 + m_sectorCount + 1; // first + one circle + 1 to get the first
+		addIndex(start + sector + 1);
+		addIndex(start + sector);
+		addIndex(start + m_sectorCount + 1);
 	}
 	
 }
