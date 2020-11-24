@@ -4,7 +4,7 @@
 namespace GeomShape {
     class Rectangle :
         public Actor,
-        public Shape
+        public Shape<Rectangle>
     {
     public:
         Rectangle(glm::vec3 center, float width, float height, float depth, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle);
@@ -20,9 +20,6 @@ namespace GeomShape {
         float m_width;
         float m_height;
         float m_depth;
-
-        static GLuint _vaoID;
-        static int numObjects;
     };
 }
 

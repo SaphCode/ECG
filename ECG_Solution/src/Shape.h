@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include "glm/ext.hpp"
 
+template <typename T>
 class Shape
 {
 protected:
@@ -24,6 +25,7 @@ protected:
 
     virtual ~Shape() {
         // free VAO and VBO
+        std::cout << "Deleting VBOs." << std::endl;
         glDeleteBuffers(1, &_vboID);
         glDeleteBuffers(1, &_iboID);
     }
@@ -104,6 +106,9 @@ protected:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+    static GLuint m_vaoID;
+    static int m_numObjects;
+
 private:
     virtual void createVertices() = 0;
     virtual void createIndices() = 0;
@@ -112,6 +117,7 @@ private:
     std::vector<unsigned int> m_indices;
 
     glm::vec3 m_color;
+
 
     GLuint _vboID;
     GLuint _iboID;
@@ -122,4 +128,7 @@ private:
     const GLuint m_proj_lq;
     const GLuint m_color_lq;
 };
+
+template <typename T> int Shape<T>::m_numObjects(0);
+template <typename T> GLuint Shape<T>::m_vaoID;
 

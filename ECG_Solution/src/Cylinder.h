@@ -3,8 +3,8 @@
 #include "Actor.h"
 
 namespace GeomShape {
-	class Cylinder :
-		public Shape,
+    class Cylinder :
+        public Shape<Cylinder>,
         public Actor
 	{
     public:
@@ -21,9 +21,6 @@ namespace GeomShape {
         float m_radius;
         float m_height;
         int m_sectorCount;
-		
-		static GLuint _vaoID;
-        static int numObjects;
     };
 }
 

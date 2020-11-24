@@ -5,8 +5,6 @@
 
 #include <iostream>
 
-int numObjects = 0;
-
 GeomShape::Sphere::Sphere(glm::vec3 center, float radius, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle, int sectorCount, int stackCount) :
 	Actor(center, scale, rotationAxis, rotationAngle),
 	Shape(color),
@@ -17,21 +15,23 @@ GeomShape::Sphere::Sphere(glm::vec3 center, float radius, glm::vec3 color, glm::
 	createVertices();
 	createIndices();
 
-	if (numObjects == 0) {
-		glGenVertexArrays(1, &_vaoID);
+	if (m_numObjects == 0) {
+		std::cout << "Generating VAO for Sphere." << std::endl;
+		glGenVertexArrays(1, &m_vaoID);
 	}
-	numObjects += 1;
+	m_numObjects += 1;
 
 	init();
 }
 
 GeomShape::Sphere::~Sphere() {
 	// virtual base destructors are always called after destructing derived
-	if (numObjects == 1) {
-		glDeleteVertexArrays(1, &_vaoID);
+	if (m_numObjects == 1) {
+		std::cout << "Deleting VAO for Sphere." << std::endl;
+		glDeleteVertexArrays(1, &m_vaoID);
 	}
-	numObjects -= 1;
-	assert(numObjects >= 0);
+	m_numObjects -= 1;
+	assert(m_numObjects >= 0);
 }
 
 void GeomShape::Sphere::update()
@@ -43,7 +43,7 @@ void GeomShape::Sphere::update()
 void GeomShape::Sphere::render()
 {
 	// bind VAO
-	glBindVertexArray(_vaoID); // bind
+	glBindVertexArray(m_vaoID); // bind
 	Shape::bindVBO();
 	Shape::draw();
 	glBindVertexArray(0);

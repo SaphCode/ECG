@@ -11,6 +11,7 @@
     <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\Teapot.cpp" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="src\Cylinder.h" />
     <ClInclude Include="src\Shape.h" />
     <ClInclude Include="src\Rectangle.h" />
     <ClInclude Include="src\Coordinates.h" />

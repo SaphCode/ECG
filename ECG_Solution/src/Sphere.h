@@ -12,7 +12,7 @@
 namespace GeomShape {
     class Sphere :
         public Actor,
-        public Shape
+        public Shape<Sphere>
     {
 
     public:
@@ -31,9 +31,6 @@ namespace GeomShape {
 
         int m_sectorCount;
         int m_stackCount;
-
-        static GLuint _vaoID;
-        static int numObjects;
     };
 }
 

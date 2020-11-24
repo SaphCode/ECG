@@ -367,6 +367,11 @@ int main(int argc, char** argv)
         const glm::vec3 color_blue(0.4, 0.3, 0.8); // blue
 
         GeomShape::Sphere sphere(glm::vec3(0,0,0), 0.6, glm::vec3(0.4,0.3,0.8), glm::vec3(1,1.7,1), zHat, 0.f, 16, 8);
+        {
+            std::cout << "Testing if 2nd sphere uses the same VAO. Constructing: \n";
+            GeomShape::Sphere sphere2(glm::vec3(0, 0, 0), 0.6, glm::vec3(0.4, 0.3, 0.8), glm::vec3(1, 1.7, 1), zHat, 0.f, 16, 8);
+            std::cout << "Sphere will be destructed b/c out of scope. Destructing: \n";
+        }
         GeomShape::Rectangle rect(glm::vec3(0, 0, 0), 1.2, 2.0, 1.2, glm::vec3(0.8, 0.1, 0.2), glm::vec3(1, 1, 1), upVector_world, 45.f);
         rect.setPosition(glm::vec3(2.f, 0.f, 0.f));
         GeomShape::Cylinder cyl(glm::vec3(0, 0, 0), 0.6, 2, glm::vec3(0.2, 0.7, 0.4), glm::vec3(1, 1, 1), zHat, 0.f, 16);
@@ -464,12 +469,9 @@ int main(int argc, char** argv)
 		}
 
         glUseProgram(0);
-        //glDisableVertexAttribArray(ex_color_lq);
         sh.DetachFromProgram(program);
         glDeleteProgram(program);
         sh.DeleteAllShaders();
-        //glDeleteBuffers(1, vbo);
-        //glDeleteVertexArrays(1, &vao);
         // after window should close, actually close it
         glfwDestroyWindow(window);
 

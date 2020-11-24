@@ -3,8 +3,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-int numObjects = 0;
-
 GeomShape::Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle, int sectorCount)
 	:
 	Actor(center, scale, rotationAxis, rotationAngle),
@@ -17,10 +15,11 @@ GeomShape::Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm:
 	createIndices();
 
 
-	if (numObjects == 0) {
-		glGenVertexArrays(1, &_vaoID);
+	if (m_numObjects == 0) {
+		std::cout << "Generating VAO for Cylinder." << std::endl;
+		glGenVertexArrays(1, &m_vaoID);
 	}
-	numObjects += 1;
+	m_numObjects += 1;
 
 	init();
 }
@@ -28,11 +27,12 @@ GeomShape::Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm:
 GeomShape::Cylinder::~Cylinder()
 {
 	// virtual base destructors are always called after destructing derived
-	if (numObjects == 1) {
-		glDeleteVertexArrays(1, &_vaoID);
+	if (m_numObjects == 1) {
+		std::cout << "Deleting VAO for Cylinder." << std::endl;
+		glDeleteVertexArrays(1, &m_vaoID);
 	}
-	numObjects -= 1;
-	assert(numObjects >= 0);
+	m_numObjects -= 1;
+	assert(m_numObjects >= 0);
 }
 
 void GeomShape::Cylinder::update()
@@ -44,7 +44,7 @@ void GeomShape::Cylinder::update()
 void GeomShape::Cylinder::render()
 {
 	// bind VAO
-	glBindVertexArray(_vaoID); // bind
+	glBindVertexArray(m_vaoID); // bind
 	Shape::bindVBO();
 	Shape::draw();
 	glBindVertexArray(0);
