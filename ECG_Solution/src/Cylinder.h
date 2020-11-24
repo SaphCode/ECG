@@ -21,6 +21,9 @@ namespace GeomShape {
         float m_radius;
         float m_height;
         int m_sectorCount;
+		
+		static GLuint _vaoID;
+        static int numObjects;
     };
 }
 

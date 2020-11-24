@@ -26,13 +26,9 @@ protected:
         // free VAO and VBO
         glDeleteBuffers(1, &_vboID);
         glDeleteBuffers(1, &_iboID);
-
-        glDeleteVertexArrays(1, &_vaoID);
     }
 
     virtual void init() {
-        glGenVertexArrays(1, &_vaoID);
-
         glGenBuffers(1, &_vboID); // vertex buffer
         glBindBuffer(GL_ARRAY_BUFFER, _vboID);
         glBufferData(GL_ARRAY_BUFFER,
@@ -51,17 +47,6 @@ protected:
     virtual void update(const glm::mat4& model) {
         glUniformMatrix4fv(m_model_lq, 1, GL_FALSE, glm::value_ptr(model));
         glUniform3fv(m_color_lq, 1, glm::value_ptr(m_color));
-    }
-
-    virtual void render() {
-        bind();
-        draw();
-        unbind();
-
-        const GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            std::cout << "Error encountered after rendering: " << error << std::endl;
-        }
     }
 
     virtual void draw() {
@@ -106,18 +91,14 @@ protected:
         m_indices.push_back(index);
     }
 
-    void bind() {
-        // bind VAO
-        glBindVertexArray(_vaoID); // bind
+    void bindVBO() {
 
         // bind VBOs
         glBindBuffer(GL_ARRAY_BUFFER, _vboID);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _iboID);
     }
 
-    void unbind() {
-        glBindVertexArray(0); // unbind
-
+    void unbindVBO() {
         // unbind VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -132,7 +113,6 @@ private:
 
     glm::vec3 m_color;
 
-    GLuint _vaoID;
     GLuint _vboID;
     GLuint _iboID;
 

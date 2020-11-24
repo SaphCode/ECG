@@ -20,6 +20,9 @@ namespace GeomShape {
         float m_width;
         float m_height;
         float m_depth;
+
+        static GLuint _vaoID;
+        static int numObjects;
     };
 }
 
