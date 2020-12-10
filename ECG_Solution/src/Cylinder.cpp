@@ -3,6 +3,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include<map>
+
 GeomShape::Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle, int sectorCount)
 	:
 	Actor(center, scale, rotationAxis, rotationAngle),
@@ -56,6 +58,28 @@ void GeomShape::Cylinder::render()
 	}
 }
 
+void GeomShape::Cylinder::createNormals() {
+	float sectorStep = 2 * M_PI / m_sectorCount;
+	float lengthInv = 1 / m_radius;
+	addNormal(0, 1.0f, 0);
+	for (int i = 0; i <= 1; i++) {
+		float y = (i == 0) ? m_height / 2 : -m_height / 2; // flipping because of wrong winding
+		for (int sector = 0; sector < m_sectorCount; sector++) { // 
+			float sectorAngle = sector * -sectorStep;
+			float x = m_radius * cosf(sectorAngle);
+			float z = m_radius * sinf(sectorAngle);
+			
+			float nx = x * lengthInv;
+			float nz = z * lengthInv;
+			float ny = (i == 0) ? 1.0f : -1.0f;
+			
+			addNormal(0.f, ny, 0.f);
+			addNormal(nx, 0.f, nz);
+		}
+	}
+	addNormal(0, -1.0f, 0);
+}
+
 void GeomShape::Cylinder::createVertices()
 {
 	float sectorStep = 2 * M_PI / m_sectorCount;
@@ -64,30 +88,40 @@ void GeomShape::Cylinder::createVertices()
 		float y = (i == 0) ? m_height / 2 : -m_height / 2; // flipping because of wrong winding
 		for (int sector = 0; sector < m_sectorCount; sector++) { // 
 			float sectorAngle = sector * -sectorStep;
-			float x = m_radius * cos(sectorAngle);
-			float z = m_radius * sin(sectorAngle);
+			float x = m_radius * cosf(sectorAngle);
+			float z = m_radius * sinf(sectorAngle);
 
+			addVertex(x, y, z);
 			addVertex(x, y, z);
 		}
 	}
 	addVertex(0, -m_height / 2, 0);
-	std::cout << "Cylinder vertices: " << 2 * m_sectorCount + 2 << " expected, vs " << getVerticesSize() / 3 << "\n";
+	std::cout << "Cylinder vertices: " << 2 * m_sectorCount * 2 + 2 << " expected, vs " << getVerticesSize() / 3 << "\n";
 }
 
 void GeomShape::Cylinder::createIndices()
 {
 	unsigned int startOfCircle, nextCircle;
 
+	unsigned int offset = 2;
+
+	std::map<unsigned int, unsigned int> mapping;
+
+	mapping[0] = 0;
+	for (int i = 1; i < 2 * m_sectorCount + 1; i++) {
+		mapping[i] = i + (i - 1);
+		std::cout << "(" << i << " -> " << mapping[i] << ")" << std::endl;
+	}
+	mapping[2 * m_sectorCount + 1] = 2 * 2 * m_sectorCount + 1;
+
 	for (int sector = 0; sector < m_sectorCount; sector++) {
 		if (sector != m_sectorCount - 1) {
-			addIndex(0);
-			addIndex(sector + 1);
-			addIndex(sector + 2);
+			addIndices(mapping[0], 2 * sector + mapping[1], 2 * sector + mapping[2]);
+			addIndices(mapping[0], 2 * sector + mapping[1] + 1, 2 * sector + mapping[2] + 1);
 		}
 		else {
-			addIndex(0);
-			addIndex(sector + 1);
-			addIndex(1);
+			addIndices(mapping[0], 2 * sector + mapping[1], mapping[1]);
+			addIndices(mapping[0], 2 * sector + mapping[1] + 1, mapping[1] + 1);
 		}
 	}
 
@@ -107,22 +141,17 @@ void GeomShape::Cylinder::createIndices()
 		unsigned int lr = nextCircle + sector + 1;
 		unsigned int ur = startOfCircle + sector + 1;
 		if (sector != m_sectorCount - 1) {
-			addIndex(ul);
-			addIndex(ll);
-			addIndex(lr);
+			addIndices(mapping[ul], mapping[ll], mapping[lr]);
+			addIndices(mapping[ul] + 1, mapping[ll] + 1, mapping[lr] + 1);
 
-			addIndex(lr);
-			addIndex(ur);
-			addIndex(ul);
+			addIndices(mapping[lr], mapping[ur], mapping[ul]);
+			addIndices(mapping[lr] + 1, mapping[ur] + 1, mapping[ul] + 1);
 		}
 		else {
-			addIndex(ul);
-			addIndex(ll);
-			addIndex(lr - m_sectorCount);
+			addIndices(mapping[ul], mapping[ll], mapping[lr - m_sectorCount]);
+			addIndices(mapping[ul] + 1, mapping[ll] + 1, mapping[lr - m_sectorCount] + 1);
 
-			addIndex(lr - m_sectorCount);
-			addIndex(ur - m_sectorCount);
-			addIndex(ul);
+			addIndices(mapping[lr - m_sectorCount] + 1, mapping[ur - m_sectorCount] + 1, mapping[ul] + 1);
 		}
 
 
@@ -132,14 +161,12 @@ void GeomShape::Cylinder::createIndices()
 	for (int sector = 0; sector < m_sectorCount; sector++) {
 		unsigned int last = 2 * m_sectorCount + 1; // first + one circle + 1 to get the first
 		if (sector != m_sectorCount - 1) {
-			addIndex(last - m_sectorCount + sector + 1);
-			addIndex(last - m_sectorCount + sector);
-			addIndex(last);
+			addIndices(mapping[last - m_sectorCount + sector + 1], mapping[last - m_sectorCount + sector], mapping[last]);
+			addIndices(mapping[last - m_sectorCount + sector + 1] + 1, mapping[last - m_sectorCount + sector] + 1, mapping[last]);
 		}
 		else {
-			addIndex(last - m_sectorCount);
-			addIndex(last - m_sectorCount + sector);
-			addIndex(last);
+			addIndices(mapping[last - m_sectorCount], mapping[last - m_sectorCount + sector], mapping[last]);
+			addIndices(mapping[last - m_sectorCount] + 1, mapping[last - m_sectorCount + sector] + 1, mapping[last]);
 		}
 
 	}

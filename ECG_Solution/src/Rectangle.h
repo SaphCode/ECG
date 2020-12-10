@@ -16,6 +16,9 @@ namespace GeomShape {
     private:
         void createVertices() override;
         void createIndices() override;
+        void createNormals() override;
+
+        void addIndicesLoop(unsigned int i1, unsigned int i2, unsigned int i3);
 
         float m_width;
         float m_height;

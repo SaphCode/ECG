@@ -24,8 +24,9 @@ namespace GeomShape {
 
 
     private:
-        void createVertices();
-        void createIndices();
+        void createVertices() override;
+        void createIndices() override;
+        void createNormals() override;
 
         float m_radius;
 

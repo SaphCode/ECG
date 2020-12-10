@@ -93,6 +93,18 @@ protected:
         m_indices.push_back(index);
     }
 
+    void addIndices(unsigned int i1, unsigned int i2, unsigned int i3) {
+        m_indices.push_back(i1);
+        m_indices.push_back(i2);
+        m_indices.push_back(i3);
+    }
+
+    void addNormal(float nx, float ny, float nz) {
+        m_normals.push_back(nx);
+        m_normals.push_back(ny);
+        m_normals.push_back(nz);
+    }
+
     void bindVBO() {
 
         // bind VBOs
@@ -112,9 +124,11 @@ protected:
 private:
     virtual void createVertices() = 0;
     virtual void createIndices() = 0;
+    virtual void createNormals() = 0;
 
     std::vector<float> m_vertices;
     std::vector<unsigned int> m_indices;
+    std::vector<float> m_normals;
 
     glm::vec3 m_color;
 

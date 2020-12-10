@@ -1,4 +1,5 @@
 #include "Rectangle.h"
+#include <map>
 
 GeomShape::Rectangle::Rectangle(glm::vec3 center, float width, float height, float depth, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle)
 	:
@@ -9,6 +10,7 @@ GeomShape::Rectangle::Rectangle(glm::vec3 center, float width, float height, flo
 	m_depth(depth)
 {
 	createVertices();
+	createNormals();
 	createIndices();
 
 	if (m_numObjects == 0) {
@@ -28,7 +30,7 @@ GeomShape::Rectangle::~Rectangle()
 		glDeleteVertexArrays(1, &m_vaoID);
 	}
 	m_numObjects -= 1;
-	assert(numObjects >= 0);
+	assert(m_numObjects >= 0);
 }
 
 void GeomShape::Rectangle::update()
@@ -59,74 +61,121 @@ void GeomShape::Rectangle::createVertices()
 	float z = m_depth / 2;
 
 	addVertex(x, y, z);
+	addVertex(x, y, z);
+	addVertex(x, y, z);
+
 	addVertex(-x, y, z);
+	addVertex(-x, y, z);
+	addVertex(-x, y, z);
+
 	addVertex(-x, -y, z);
+	addVertex(-x, -y, z);
+	addVertex(-x, -y, z);
+
+	addVertex(x, -y, z);
+	addVertex(x, -y, z);
 	addVertex(x, -y, z);
 
 	addVertex(x, y, -z);
+	addVertex(x, y, -z);
+	addVertex(x, y, -z);
+
 	addVertex(-x, y, -z);
+	addVertex(-x, y, -z);
+	addVertex(-x, y, -z);
+
 	addVertex(-x, -y, -z);
+	addVertex(-x, -y, -z);
+	addVertex(-x, -y, -z);
+
+	addVertex(x, -y, -z);
+	addVertex(x, -y, -z); 
 	addVertex(x, -y, -z);
 
-	std::cout << "Rectangle vertices: " << 8 << " expected vs " << getVerticesSize() / 3 << "\n";
+	std::cout << "Rectangle vertices: " << 8 * 3 << " expected vs " << getVerticesSize() / 3 << "\n";
+}
+
+void GeomShape::Rectangle::createNormals() {
+	const float nx = 1;
+	const float ny = 1;
+	const float nz = 1;
+
+	addNormal(nx, 0, 0);
+	addNormal(0, ny, 0);
+	addNormal(0, 0, nz);
+
+	addNormal(-nx, 0, 0);
+	addNormal(0, ny, 0);
+	addNormal(0, 0, nz);
+
+	addNormal(-nx, 0, 0);
+	addNormal(0, -ny, 0);
+	addNormal(0, 0, nz);
+
+	addNormal(nx, 0, 0);
+	addNormal(0, -ny, 0);
+	addNormal(0, 0, nz);
+
+	addNormal(nx, 0, 0);
+	addNormal(0, ny, 0);
+	addNormal(0, 0, -nz);
+
+	addNormal(-nx, 0, 0);
+	addNormal(0, ny, 0);
+	addNormal(0, 0, -nz);
+
+	addNormal(-nx, 0, 0);
+	addNormal(0, -ny, 0);
+	addNormal(0, 0, -nz);
+
+	addNormal(nx, 0, 0);
+	addNormal(0, -ny, 0);
+	addNormal(0, 0, -nz);
 }
 
 void GeomShape::Rectangle::createIndices()
 {
-	// front face
-	addIndex(0);
-	addIndex(1);
-	addIndex(2);
+	unsigned int counter = 0;
+	unsigned int adjust = 6;
 
-	addIndex(2);
-	addIndex(3);
-	addIndex(0);
+	std::map<unsigned int, unsigned int> mapping;
+	for (int i = 0; i < 8; i++) {
+		mapping[i] = 3 * i;
+	}
+
+
+	// front face
+	addIndicesLoop(mapping[0], mapping[1], mapping[2]);
+	addIndicesLoop(mapping[2], mapping[3], mapping[0]);
 
 	// up face
-	addIndex(0);
-	addIndex(4);
-	addIndex(5);
-
-	addIndex(5);
-	addIndex(1);
-	addIndex(0);
+	addIndicesLoop(mapping[0], mapping[4], mapping[5]);
+	addIndicesLoop(mapping[5], mapping[1], mapping[0]);
 
 	// right face
-	addIndex(4);
-	addIndex(0);
-	addIndex(3);
-
-	addIndex(3);
-	addIndex(7);
-	addIndex(4);
+	addIndicesLoop(mapping[4], mapping[0], mapping[3]);
+	addIndicesLoop(mapping[3], mapping[7], mapping[4]);
 
 	// back face
-	addIndex(5);
-	addIndex(4);
-	addIndex(7);
+	addIndicesLoop(mapping[5], mapping[4], mapping[7]);
+	addIndicesLoop(mapping[7], mapping[6], mapping[5]);
 
-	addIndex(7);
-	addIndex(6);
-	addIndex(5);
-
-	// left face
-	addIndex(1);
-	addIndex(5);
-	addIndex(6);
+	// left face (other later)
+	addIndicesLoop(mapping[1], mapping[5], mapping[6]);
 
 	// down face
-	addIndex(6);
-	addIndex(7);
-	addIndex(3);
-
-	addIndex(3);
-	addIndex(2);
-	addIndex(6);
-
+	addIndicesLoop(mapping[6], mapping[7], mapping[3]);
+	addIndicesLoop(mapping[3], mapping[2], mapping[6]);
+	
 	// left face last piece
-	addIndex(6);
-	addIndex(2);
-	addIndex(1);
+	addIndicesLoop(mapping[6], mapping[2], mapping[1]);
 
-	std::cout << "Rectangle triangles: " << 12 << " expected vs " << getIndicesSize() / 3 << "\n";
+	std::cout << "Rectangle triangles: " << 12 * 3 << " expected vs " << getIndicesSize() / 3 << "\n";
+}
+
+
+void GeomShape::Rectangle::addIndicesLoop(unsigned int i1, unsigned int i2, unsigned int i3) {
+	for (int i = 0; i < 3; i++) {
+		addIndices(i1 + i, i2 + i, i3 + i);
+	}
 }

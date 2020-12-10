@@ -131,6 +131,37 @@ void GeomShape::Sphere::createIndices() {
 	std::cout << "Spere triangles: " << 2 * m_sectorCount * (m_stackCount - 1) << " expected, vs " << getIndicesSize()/3 << "\n";
 }
 
+void GeomShape::Sphere::createNormals() {
+	float sectorStep = 2 * M_PI / m_sectorCount;
+	float stackStep = M_PI / m_stackCount;
+	float invLength = 1.f / m_radius;
+
+	// from top to bottom
+	addNormal(0, 1.0f, 0);
+	for (int stack = 1; stack < m_stackCount; stack++) {
+		// get the angle from the top (0 deg)
+		float stackAngle = stack * stackStep;
+
+		float y = m_radius * cosf(stackAngle);
+		float xz_from_y_axis = m_radius * sinf(stackAngle);
+
+		for (int sector = 0; sector < m_sectorCount; sector++) { // changed: <=
+			// get the angle corresponding to the sector #
+			float sectorAngle = sector * -sectorStep;
+
+			float x = xz_from_y_axis * cosf(sectorAngle);
+			float z = xz_from_y_axis * sinf(sectorAngle);
+
+			float nx = x * invLength;
+			float ny = y * invLength;
+			float nz = z * invLength;
+
+			addNormal(nx, ny, nz);
+		}
+	}
+	addNormal(0, -1.0f, 0);
+}
+
 void GeomShape::Sphere::createVertices() {
 	float sectorStep = 2 * M_PI / m_sectorCount;
 	float stackStep = M_PI / m_stackCount;
@@ -141,15 +172,15 @@ void GeomShape::Sphere::createVertices() {
 		// get the angle from the top (0 deg)
 		float stackAngle = stack * stackStep;
 
-		float y = m_radius * cos(stackAngle);
-		float xz_from_y_axis = m_radius * sin(stackAngle);
+		float y = m_radius * cosf(stackAngle);
+		float xz_from_y_axis = m_radius * sinf(stackAngle);
 
 		for (int sector = 0; sector < m_sectorCount; sector++) { // changed: <=
 			// get the angle corresponding to the sector #
 			float sectorAngle = sector * -sectorStep;
 
-			float x = xz_from_y_axis * cos(sectorAngle);
-			float z = xz_from_y_axis * sin(sectorAngle);
+			float x = xz_from_y_axis * cosf(sectorAngle);
+			float z = xz_from_y_axis * sinf(sectorAngle);
 
 			addVertex(x, y, z);
 		}
