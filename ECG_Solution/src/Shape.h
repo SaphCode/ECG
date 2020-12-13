@@ -17,10 +17,12 @@ protected:
     Shape(glm::vec3 color) :
         m_pos_lq(0),
         m_model_lq(1),
+        m_normal_lq(5),
         m_view_lq(2),
         m_proj_lq(3),
         m_color_lq(4),
-        m_color(color)
+        m_color(color),
+        m_interleavedStride(24)
     {}
 
     virtual ~Shape() {
@@ -34,8 +36,8 @@ protected:
         glGenBuffers(1, &_vboID); // vertex buffer
         glBindBuffer(GL_ARRAY_BUFFER, _vboID);
         glBufferData(GL_ARRAY_BUFFER,
-            m_vertices.size() * sizeof(float),
-            &m_vertices[0],
+            m_interleavedVertices.size() * sizeof(float),
+            &m_interleavedVertices[0],
             GL_STATIC_DRAW);
 
         glGenBuffers(1, &_iboID); // index buffer
@@ -54,17 +56,34 @@ protected:
     virtual void draw() {
         // activate attrib arrays
         glEnableVertexAttribArray(m_pos_lq); // should read data from vbo // here will be the layout qualifier
+        glEnableVertexAttribArray(m_normal_lq);
 
-        glVertexAttribPointer(m_pos_lq, 3, GL_FLOAT, false, 0, (void*)0); // how should the data be read
+        glVertexAttribPointer(
+            m_pos_lq,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            m_interleavedStride,
+            (void*)0
+        ); // how should the data be read
+        glVertexAttribPointer(
+            m_normal_lq,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            m_interleavedStride,
+            (void*)(sizeof(float) * 3)
+        );
 
         // draw a sphere with VBO
         glDrawElements(GL_TRIANGLES,                    // primitive type
-            getIndicesSize(),				// # of indices
+            m_indices.size(),				// # of indices
             GL_UNSIGNED_INT,                 // data type
             (void*)0);                    // offset to indices
 
         // deactivate attrib arrays
         glDisableVertexAttribArray(m_pos_lq);
+        glDisableVertexAttribArray(m_normal_lq);
     }
 
     const unsigned int* getIndices() {
@@ -129,15 +148,18 @@ private:
     std::vector<float> m_vertices;
     std::vector<unsigned int> m_indices;
     std::vector<float> m_normals;
+    std::vector<float> m_interleavedVertices;
 
     glm::vec3 m_color;
 
+    const unsigned int m_interleavedStride;
 
     GLuint _vboID;
     GLuint _iboID;
 
     const GLuint m_pos_lq;
     const GLuint m_model_lq;
+    const GLuint m_normal_lq;
     const GLuint m_view_lq;
     const GLuint m_proj_lq;
     const GLuint m_color_lq;
