@@ -17,7 +17,14 @@
 template <typename T>
 class Shape
 {
+public:
+    virtual void setDirectionalLight(DirectionalLight dirLight) {
+        m_dirLight = dirLight;
+    }
 
+    virtual void setPointLight(PointLight pointLight) {
+        m_pointLight = pointLight;
+    }
 
 protected:
     Shape(glm::vec3 color) :
@@ -33,6 +40,13 @@ protected:
         m_dir_ambient_lq(7),
         m_dir_diffuse_lq(8),
         m_dir_specular_lq(9),
+        m_pointLight_position_lq(10),
+        m_pointLight_attConst_lq(11),
+        m_pointLight_attLin_lq(12),
+        m_pointLight_attQuad_lq(13),
+        m_pointLight_ambient_lq(14),
+        m_pointLight_diffuse_lq(15),
+        m_pointLight_specular_lq(16),
         m_gouraud(false),
         m_ka(0.1),
         m_kd(0.9),
@@ -47,34 +61,34 @@ protected:
         glDeleteBuffers(1, &_iboID);
     }
 
-    void light(std::vector<DirectionalLight> dirSources, std::vector<PointLight> pointSources) {
-        for (auto& s : dirSources) {
-            glm::vec3 direction = s.getDirection();
-            glm::vec3 ambient = s.getAmbient();
-            glm::vec3 diffuse = s.getDiffuse();
-            glm::vec3 specular = s.getSpecular();
-            glUniform3fv(m_direction_lq, 1, glm::value_ptr(direction));
-            glUniform3fv(m_dir_ambient_lq, 1, glm::value_ptr(ambient));
-            glUniform3fv(m_dir_diffuse_lq, 1, glm::value_ptr(diffuse));
-            glUniform3fv(m_dir_specular_lq, 1, glm::value_ptr(specular));
-        }
+    void light(DirectionalLight dirS, PointLight pointS) {
+        //for (auto& s : dirSources) {
+        glm::vec3 direction = dirS.getDirection();
+        glm::vec3 ambient = dirS.getAmbient();
+        glm::vec3 diffuse = dirS.getDiffuse();
+        glm::vec3 specular = dirS.getSpecular();
+        glUniform3fv(m_direction_lq, 1, glm::value_ptr(direction));
+        glUniform3fv(m_dir_ambient_lq, 1, glm::value_ptr(ambient));
+        glUniform3fv(m_dir_diffuse_lq, 1, glm::value_ptr(diffuse));
+        glUniform3fv(m_dir_specular_lq, 1, glm::value_ptr(specular));
+        //}
 
         unsigned int it = 0;
-        for (auto& s : pointSources) {
-            glm::vec3 position = s.getPosition();
-            glm::vec3 ambient = s.getAmbient();
-            glm::vec3 diffuse = s.getDiffuse();
-            glm::vec3 specular = s.getSpecular();
-            glm::vec3 attenuation = s.getAttenuation();
-            glUniform3fv(m_pointLight_position_lq + it, 1, glm::value_ptr(position));
-            glUniform3fv(m_pointLight_ambient_lq + it, 1, glm::value_ptr(ambient));
-            glUniform3fv(m_pointLight_diffuse_lq + it, 1, glm::value_ptr(diffuse));
-            glUniform3fv(m_pointLight_specular_lq + it, 1, glm::value_ptr(specular));
-            glUniform3fv(m_pointLight_attConst_lq + it, 1, glm::value_ptr(attenuation.x));
-            glUniform3fv(m_pointLight_attLin_lq + it, 1, glm::value_ptr(attenuation.y));
-            glUniform3fv(m_pointLight_attQuad_lq + it, 1, glm::value_ptr(attenuation.z));
-            it += 7;
-        }
+        //for (auto& s : pointSources) {
+        glm::vec3 position = pointS.getPosition();
+        ambient = pointS.getAmbient();
+        diffuse = pointS.getDiffuse();
+        specular = pointS.getSpecular();
+        glm::vec3 attenuation = pointS.getAttenuation();
+        glUniform3fv(m_pointLight_position_lq + it, 1, glm::value_ptr(position));
+        glUniform3fv(m_pointLight_ambient_lq + it, 1, glm::value_ptr(ambient));
+        glUniform3fv(m_pointLight_diffuse_lq + it, 1, glm::value_ptr(diffuse));
+        glUniform3fv(m_pointLight_specular_lq + it, 1, glm::value_ptr(specular));
+        glUniform1f(m_pointLight_attConst_lq + it, attenuation.x);
+        glUniform1f(m_pointLight_attLin_lq + it, attenuation.y);
+        glUniform1f(m_pointLight_attQuad_lq + it, attenuation.z);
+        //it += 7;
+        //}
     }
 
     virtual void init() {
@@ -94,6 +108,7 @@ protected:
     }
 
     virtual void update(const glm::mat4& model) {
+        light(m_dirLight, m_pointLight);
         glUniformMatrix4fv(m_model_lq, 1, GL_FALSE, glm::value_ptr(model));
         glUniform3fv(m_color_lq, 1, glm::value_ptr(m_color));
     }
@@ -222,6 +237,9 @@ private:
     GLuint _vboID;
     GLuint _iboID;
 
+    DirectionalLight m_dirLight;
+    PointLight m_pointLight;
+
     const GLuint m_pos_lq;
     const GLuint m_model_lq;
     const GLuint m_normal_lq;
@@ -233,6 +251,9 @@ private:
     const GLuint m_dir_ambient_lq;
     const GLuint m_dir_diffuse_lq;
     const GLuint m_dir_specular_lq;
+
+    const GLuint m_pointLight_position_lq, m_pointLight_attConst_lq, m_pointLight_attLin_lq,
+        m_pointLight_attQuad_lq, m_pointLight_ambient_lq, m_pointLight_diffuse_lq, m_pointLight_specular_lq;
 };
 
 template <typename T> int Shape<T>::m_numObjects(0);

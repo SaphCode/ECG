@@ -370,29 +370,33 @@ int main(int argc, char** argv)
         const glm::vec3 color_pointLight(1.0, 1.0, 1.0);
 
         // Lights
-        std::vector<DirectionalLight> dirLights;
         DirectionalLight dl(color_directional, color_directional, color_directional, glm::vec3(0, -1, -1));
-        dirLights.push_back(dl);
 
-        std::vector<PointLight> pointLights;
         PointLight pl(color_pointLight, color_pointLight, color_pointLight, glm::vec3(0, 0, 0), glm::vec3(1, 0.4, 0.1));
-        pointLights.push_back(pl);
 
         GeomShape::Sphere sphereTR(glm::vec3(1.2,1.0,0.0), 1.0, color_red, glm::vec3(1,1,1), zHat, 0.f, 32, 16);
+        sphereTR.setDirectionalLight(dl);
+        sphereTR.setPointLight(pl);
         sphereTR.setShading("Gouraud");
         Material sphereM(0.1, 0.9, 0.3, 10);
         sphereTR.setMaterial(sphereM);
 
         GeomShape::Sphere sphereTL(glm::vec3(-1.2, 1.0, 0.0), 1.0, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 32, 16);
+        sphereTL.setDirectionalLight(dl);
+        sphereTL.setPointLight(pl);
         sphereTL.setShading("Phong");
         sphereTL.setMaterial(sphereM);
 
         GeomShape::Rectangle rect(glm::vec3(-1.2, -1.5, 0.0), 1.5, 1.5, 1.5, color_red, glm::vec3(1, 1, 1), upVector_world, 0.0f);
+        rect.setDirectionalLight(dl);
+        rect.setPointLight(pl);
         rect.setShading("Phong");
         Material rectM(0.05, 0.8, 0.5, 5);
         rect.setMaterial(rectM);
         
         GeomShape::Cylinder cyl(glm::vec3(1.2, -1.5, 0.0), 1.0, 1.5, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 16);
+        cyl.setDirectionalLight(dl);
+        cyl.setPointLight(pl);
         cyl.setShading("Phong");
         Material cylM(0.05, 0.8, 0.5, 5);
         cyl.setMaterial(cylM);
