@@ -47,11 +47,14 @@ protected:
         m_pointLight_ambient_lq(14),
         m_pointLight_diffuse_lq(15),
         m_pointLight_specular_lq(16),
-        m_gouraud(false),
         m_ka(0.1),
         m_kd(0.9),
         m_ks(0.3),
-        m_alpha(10)
+        m_alpha(10),
+        m_alpha_lq(17),
+        m_ka_lq(18),
+        m_kd_lq(19),
+        m_ks_lq(20)
     {}
 
     virtual ~Shape() {
@@ -62,6 +65,13 @@ protected:
     }
 
     void light(DirectionalLight dirS, PointLight pointS) {
+
+        // set material
+        glUniform1f(m_alpha_lq, m_alpha);
+        glUniform1f(m_ka_lq, m_ka);
+        glUniform1f(m_kd_lq, m_kd);
+        glUniform1f(m_ks_lq, m_ks);
+
         //for (auto& s : dirSources) {
         glm::vec3 direction = dirS.getDirection();
         glm::vec3 ambient = dirS.getAmbient();
@@ -218,8 +228,6 @@ protected:
 
     float m_ka, m_kd, m_ks, m_alpha;
 
-    bool m_gouraud;
-
 private:
     virtual void createVertices() = 0;
     virtual void createIndices() = 0;
@@ -246,6 +254,10 @@ private:
     const GLuint m_view_lq;
     const GLuint m_proj_lq;
     const GLuint m_color_lq;
+    const GLuint m_alpha_lq;
+    const GLuint m_ka_lq;
+    const GLuint m_kd_lq;
+    const GLuint m_ks_lq;
 
     const GLuint m_direction_lq;
     const GLuint m_dir_ambient_lq;

@@ -31,20 +31,30 @@ public:
 
 	/* Attaches all loaded shaders of @param program.
 	*/
-	void AttachToProgram(GLuint& program);
+	void AttachToProgram();
 
 	/* Detaches all loaded shaders of @param program.
 	*/
-	void DetachFromProgram(GLuint& program);
+	void DetachFromProgram();
 
 	/* Deletes all shaders registered in member variable m_loadedShaders.
 	*/
 	void DeleteAllShaders();
+
+	GLuint& getProgram() {
+		return m_program;
+	}
+
+	void setProgram(GLuint program) {
+		m_program = program;
+	}
 	
 private:
 	std::string m_shader_dir;
-	std::vector<std::unique_ptr<GLuint>> m_loadedShaders;
+	std::vector<GLuint> m_loadedShaders;
 	ShaderErrorHandler m_seh;
+
+	GLuint m_program;
 
 	void compileShader(GLuint shader);
 		

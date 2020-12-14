@@ -51,17 +51,17 @@ bool ShaderHandler::TryLoadShaders(std::vector<Shader> shaders) {
 	
 }
 
-void ShaderHandler::AttachToProgram(GLuint& program)
+void ShaderHandler::AttachToProgram()
 {
 	for (auto& shader : m_loadedShaders) {
-		glAttachShader(program, *shader);
+		glAttachShader(m_program, shader);
 	}
 }
 
-void ShaderHandler::DetachFromProgram(GLuint& program)
+void ShaderHandler::DetachFromProgram()
 {
 	for (auto& shader : m_loadedShaders) {
-		glDetachShader(program, *shader);
+		glDetachShader(m_program, shader);
 	}
 }
 
@@ -69,7 +69,7 @@ void ShaderHandler::DetachFromProgram(GLuint& program)
 void ShaderHandler::DeleteAllShaders() {
 	// Delete all shaders
 	for (auto& shader : m_loadedShaders) {
-		glDeleteShader(*shader);
+		glDeleteShader(shader);
 	}
 	std::cout << "Deleted all shaders." << std::endl;
 }
@@ -79,5 +79,5 @@ void ShaderHandler::DeleteAllShaders() {
 */
 void ShaderHandler::compileShader(GLuint shader) {
 	glCompileShader(shader);
-	m_loadedShaders.push_back(std::move(std::make_unique<GLuint>(shader)));
+	m_loadedShaders.push_back(shader);
 }

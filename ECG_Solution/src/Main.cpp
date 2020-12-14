@@ -182,6 +182,75 @@ void testUpdateRender(GLFWwindow* window, Teapot& tp) {
     glfwSwapBuffers(window);
 }
 
+std::vector<Shader> CreateShaders(std::string assetDir) {
+    std::string shaderDir = assetDir;
+
+
+    Shader vertexShader(ShaderType::VERTEX, shaderDir + "simpleGeometry.vert");
+    Shader fragmentShader(ShaderType::FRAGMENT, shaderDir + "simpleGeometry.frag");
+
+    std::vector<Shader> shaders;
+    shaders.push_back(vertexShader);
+    shaders.push_back(fragmentShader);
+    return shaders;
+}
+
+ShaderHandler CreateAndLinkProgram(std::vector<Shader> shaders, GLFWwindow* window) {
+    ShaderHandler sh;
+    // Once the shaders are compiled, can link them in program.
+    // Get a program object.
+    GLuint program = glCreateProgram();
+    sh.setProgram(program);
+
+    bool success = sh.TryLoadShaders(shaders);
+    if (!success) {
+        std::cout << "Loading shaders failed." << std::endl;
+        glDeleteProgram(program);
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        throw std::exception("Loading shaders failed.");
+    }
+    else {
+        sh.AttachToProgram();
+    }
+
+    // WARNING: can only do the following:
+    // https://www.khronos.org/opengl/wiki/Shader_Compilation
+    // Before linking!!!!!
+
+    // glBindAttribLocation should be unneccessary bc were using layout qualifiers
+
+    // Link the program
+    glLinkProgram(program);
+
+    // Note the different functions here: glGetProgram* instead of glGetShader*.
+    GLint isLinked = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+    if (isLinked == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        // The maxLength includes the NULL character
+        std::vector<GLchar> infoLog(maxLength);
+        glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+        // We don't need the program anymore.
+        glDeleteProgram(program);
+        // Don't leak shaders either.
+        sh.DeleteAllShaders();
+
+        // Use the infoLog as you see fit.
+        MessagePrinter::PrintLog(infoLog);
+
+        glfwDestroyWindow(window);
+        glfwTerminate();
+
+        // In this simple program, we'll just leave
+        throw std::exception("Program linking failed.");
+    }
+    return sh;
+}
 
 
 /* --------------------------------------------- */
@@ -268,75 +337,25 @@ int main(int argc, char** argv)
     // Create and compile shaders
     /* --------------------------------------------- */    
 
-    std::string shaderDir = assets;
-    ShaderHandler sh;
+    std::vector<Shader> gouraudShaders = CreateShaders(assets);
+    ShaderHandler shGouraud = CreateAndLinkProgram(gouraudShaders, window);
+    GLuint gouraudProgram = shGouraud.getProgram();
 
-    Shader vertexShader(ShaderType::VERTEX, shaderDir + "simpleGeometry.vert");
-    Shader fragmentShader(ShaderType::FRAGMENT, shaderDir + "simpleGeometry.frag");
-
-    std::vector<Shader> shaders;
-    shaders.push_back(vertexShader);
-    shaders.push_back(fragmentShader);
-
-    // Once the shaders are compiled, can link them in program.
-    // Get a program object.
-    GLuint program = glCreateProgram();
-
-    bool success = sh.TryLoadShaders(shaders);
-    if (!success) {
-        std::string msg("Loading shaders failed.");
-        glDeleteProgram(program);
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        EXIT_WITH_ERROR(msg);
-    }
-    else {
-        sh.AttachToProgram(program);
-    }
-
-    // WARNING: can only do the following:
-    // https://www.khronos.org/opengl/wiki/Shader_Compilation
-    // Before linking!!!!!
-
-    // glBindAttribLocation should be unneccessary bc were using layout qualifiers
-
-    // Link the program
-    glLinkProgram(program);
-
-    // Note the different functions here: glGetProgram* instead of glGetShader*.
-    GLint isLinked = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
-    if (isLinked == GL_FALSE)
-    {
-        GLint maxLength = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-        // The maxLength includes the NULL character
-        std::vector<GLchar> infoLog(maxLength);
-        glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-
-        // We don't need the program anymore.
-        glDeleteProgram(program);
-        // Don't leak shaders either.
-        sh.DeleteAllShaders();
-
-        // Use the infoLog as you see fit.
-        MessagePrinter::PrintLog(infoLog);
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
-
-        // In this simple program, we'll just leave
-        EXIT_WITH_ERROR("Program linking failed.");
-    }
+    std::vector<Shader> phongShaders = CreateShaders(assets + "phong/");
+    ShaderHandler shPhong = CreateAndLinkProgram(phongShaders, window);
+    GLuint phongProgram = shPhong.getProgram();
+    
 
 	// Init Framework
 	if (!initFramework()) {
-        sh.DetachFromProgram(program);
+        shGouraud.DetachFromProgram();
+        shPhong.DetachFromProgram();
         // We don't need the program anymore.
-        glDeleteProgram(program);
+        glDeleteProgram(gouraudProgram);
+        glDeleteProgram(phongProgram);
         // Don't leak shaders either.
-        sh.DeleteAllShaders();
+        shGouraud.DeleteAllShaders();
+        shPhong.DeleteAllShaders();
 
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -377,35 +396,33 @@ int main(int argc, char** argv)
         GeomShape::Sphere sphereTR(glm::vec3(1.2,1.0,0.0), 1.0, color_red, glm::vec3(1,1,1), zHat, 0.f, 32, 16);
         sphereTR.setDirectionalLight(dl);
         sphereTR.setPointLight(pl);
-        sphereTR.setShading("Gouraud");
         Material sphereM(0.1, 0.9, 0.3, 10);
         sphereTR.setMaterial(sphereM);
 
         GeomShape::Sphere sphereTL(glm::vec3(-1.2, 1.0, 0.0), 1.0, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 32, 16);
         sphereTL.setDirectionalLight(dl);
         sphereTL.setPointLight(pl);
-        sphereTL.setShading("Phong");
         sphereTL.setMaterial(sphereM);
 
         GeomShape::Rectangle rect(glm::vec3(-1.2, -1.5, 0.0), 1.5, 1.5, 1.5, color_red, glm::vec3(1, 1, 1), upVector_world, 0.0f);
         rect.setDirectionalLight(dl);
         rect.setPointLight(pl);
-        rect.setShading("Phong");
         Material rectM(0.05, 0.8, 0.5, 5);
         rect.setMaterial(rectM);
         
         GeomShape::Cylinder cyl(glm::vec3(1.2, -1.5, 0.0), 1.0, 1.5, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 16);
         cyl.setDirectionalLight(dl);
         cyl.setPointLight(pl);
-        cyl.setShading("Phong");
         Material cylM(0.05, 0.8, 0.5, 5);
         cyl.setMaterial(cylM);
 
-        std::vector<std::unique_ptr<Actor>> actors;
-        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTR)));
-        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTL)));
-        actors.push_back(std::make_unique<GeomShape::Rectangle>(std::move(rect)));
-        actors.push_back(std::make_unique<GeomShape::Cylinder>(std::move(cyl)));
+        std::vector<std::unique_ptr<Actor>> gouraudActors;
+        gouraudActors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTR)));
+        std::vector<std::unique_ptr<Actor>> phongActors;
+        //actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTR)));
+        phongActors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTL)));
+        phongActors.push_back(std::make_unique<GeomShape::Rectangle>(std::move(rect)));
+        phongActors.push_back(std::make_unique<GeomShape::Cylinder>(std::move(cyl)));
 
         float dPhi = (2 * 3.14159) / width;
         float dTheta = (2 * 3.14159) / height;
@@ -476,13 +493,28 @@ int main(int argc, char** argv)
             camera.setCameraView(cam_pos, cam_pivot, upVector_world);
             glm::mat4 viewMatrix = camera.getViewMatrix();
             
-            glUseProgram(program);
+
+            // GOURAUD SHADING
+            glUseProgram(gouraudProgram);
             u_int view_lq = 2;
             u_int projection_lq = 3;
+            u_int viewDir_lq = 20;
             glUniformMatrix4fv(view_lq, 1, GL_FALSE, glm::value_ptr(viewMatrix));
             glUniformMatrix4fv(projection_lq, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-            for (auto& a : actors) {
+            for (auto& a : gouraudActors) {
+                a->update();
+                a->render();
+            }
+
+            glUseProgram(0);
+
+            // PHONG SHADING
+            glUseProgram(phongProgram);
+            glUniformMatrix4fv(view_lq, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+            glUniformMatrix4fv(projection_lq, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+            for (auto& a : phongActors) {
                 a->update();
                 a->render();
             }
@@ -494,9 +526,9 @@ int main(int argc, char** argv)
 		}
 
         glUseProgram(0);
-        sh.DetachFromProgram(program);
-        glDeleteProgram(program);
-        sh.DeleteAllShaders();
+        shGouraud.DetachFromProgram();
+        glDeleteProgram(shGouraud.getProgram());
+        shGouraud.DeleteAllShaders();
         // after window should close, actually close it
         glfwDestroyWindow(window);
 
@@ -517,6 +549,7 @@ int main(int argc, char** argv)
 
 	return EXIT_SUCCESS;
 }
+
 
 
 

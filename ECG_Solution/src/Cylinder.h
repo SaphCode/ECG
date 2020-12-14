@@ -21,18 +21,6 @@ namespace GeomShape {
             m_alpha = material.alpha;
         }
 
-        void setShading(std::string type) {
-            if (type == "Gouraud") {
-                m_gouraud = true;
-            }
-            else if (type == "Phong") {
-                m_gouraud = false;
-            }
-            else {
-                std::cout << "Not supported: " << type << std::endl;
-            }
-        }
-
     private:
         void createVertices() override;
         void createIndices() override;

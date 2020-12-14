@@ -73,6 +73,7 @@ void GeomShape::Cylinder::createNormals() {
 			
 			float nx = x * lengthInv;
 			float nz = z * lengthInv;
+
 			float ny = (i == 0) ? 1.0f : -1.0f;
 			
 			addNormal(0.f, ny, 0.f);
@@ -153,6 +154,7 @@ void GeomShape::Cylinder::createIndices()
 			addIndices(mapping[ul], mapping[ll], mapping[lr - m_sectorCount]);
 			addIndices(mapping[ul] + 1, mapping[ll] + 1, mapping[lr - m_sectorCount] + 1);
 
+			addIndices(mapping[lr - m_sectorCount], mapping[ur - m_sectorCount], mapping[ul]);
 			addIndices(mapping[lr - m_sectorCount] + 1, mapping[ur - m_sectorCount] + 1, mapping[ul] + 1);
 		}
 
@@ -172,5 +174,5 @@ void GeomShape::Cylinder::createIndices()
 		}
 
 	}
-	std::cout << "Cylinder triangles: " << 4 * m_sectorCount << " expected, vs " << getIndicesSize() / 3 << "\n";
+	std::cout << "Cylinder triangles: " << 4 * 2 * m_sectorCount << " expected, vs " << getIndicesSize() / 3 << "\n";
 }
