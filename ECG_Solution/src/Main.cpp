@@ -15,6 +15,7 @@
 #include "Sphere.h"
 #include "Rectangle.h"
 #include "Cylinder.h"
+#include "Material.h"
 
 #include <sstream>
 #include <vector>
@@ -363,22 +364,42 @@ int main(int argc, char** argv)
         Camera camera(eye, lookAt, upVector_world);
 
         // uniform color
-        const glm::vec3 color_red(0.8, 0.1, 0.2); // red
-        const glm::vec3 color_blue(0.4, 0.3, 0.8); // blue
+        const glm::vec3 color_red(1.0, 0.0, 0.0); // red
+        const glm::vec3 color_green(0.0, 1.0, 0.0); // green
+        const glm::vec3 color_directional(0.8, 0.8, 0.8);
+        const glm::vec3 color_pointLight(1.0, 1.0, 1.0);
 
-        GeomShape::Sphere sphere(glm::vec3(0,0,0), 0.6, glm::vec3(0.4,0.3,0.8), glm::vec3(1,1.7,1), zHat, 0.f, 16, 8);
-        {
-            std::cout << "Testing if 2nd sphere uses the same VAO. Constructing: \n";
-            GeomShape::Sphere sphere2(glm::vec3(0, 0, 0), 0.6, glm::vec3(0.4, 0.3, 0.8), glm::vec3(1, 1.7, 1), zHat, 0.f, 16, 8);
-            std::cout << "Sphere will be destructed b/c out of scope. Destructing: \n";
-        }
-        GeomShape::Rectangle rect(glm::vec3(0, 0, 0), 1.2, 2.0, 1.2, glm::vec3(0.8, 0.1, 0.2), glm::vec3(1, 1, 1), upVector_world, 45.f);
-        rect.setPosition(glm::vec3(2.f, 0.f, 0.f));
-        GeomShape::Cylinder cyl(glm::vec3(0, 0, 0), 0.6, 2, glm::vec3(0.2, 0.7, 0.4), glm::vec3(1, 1, 1), zHat, 0.f, 16);
-        cyl.setPosition(glm::vec3(-2.f, 0.f, 0.f));        
+        // Lights
+        std::vector<DirectionalLight> dirLights;
+        DirectionalLight dl(color_directional, color_directional, color_directional, glm::vec3(0, -1, -1));
+        dirLights.push_back(dl);
+
+        std::vector<PointLight> pointLights;
+        PointLight pl(color_pointLight, color_pointLight, color_pointLight, glm::vec3(0, 0, 0), glm::vec3(1, 0.4, 0.1));
+        pointLights.push_back(pl);
+
+        GeomShape::Sphere sphereTR(glm::vec3(1.2,1.0,0.0), 1.0, color_red, glm::vec3(1,1,1), zHat, 0.f, 32, 16);
+        sphereTR.setShading("Gouraud");
+        Material sphereM(0.1, 0.9, 0.3, 10);
+        sphereTR.setMaterial(sphereM);
+
+        GeomShape::Sphere sphereTL(glm::vec3(-1.2, 1.0, 0.0), 1.0, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 32, 16);
+        sphereTL.setShading("Phong");
+        sphereTL.setMaterial(sphereM);
+
+        GeomShape::Rectangle rect(glm::vec3(-1.2, -1.5, 0.0), 1.5, 1.5, 1.5, color_red, glm::vec3(1, 1, 1), upVector_world, 0.0f);
+        rect.setShading("Phong");
+        Material rectM(0.05, 0.8, 0.5, 5);
+        rect.setMaterial(rectM);
+        
+        GeomShape::Cylinder cyl(glm::vec3(1.2, -1.5, 0.0), 1.0, 1.5, color_green, glm::vec3(1, 1, 1), zHat, 0.f, 16);
+        cyl.setShading("Phong");
+        Material cylM(0.05, 0.8, 0.5, 5);
+        cyl.setMaterial(cylM);
 
         std::vector<std::unique_ptr<Actor>> actors;
-        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphere)));
+        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTR)));
+        actors.push_back(std::make_unique<GeomShape::Sphere>(std::move(sphereTL)));
         actors.push_back(std::make_unique<GeomShape::Rectangle>(std::move(rect)));
         actors.push_back(std::make_unique<GeomShape::Cylinder>(std::move(cyl)));
 

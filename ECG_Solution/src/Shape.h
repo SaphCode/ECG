@@ -3,6 +3,10 @@
 #include <vector>
 #include <iostream>
 
+#include "DirectionalLight.h"
+#include "PointLight.h"
+#include "Material.h"
+
 // Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
 #include <GL/glew.h>
 // Include GLFW
@@ -13,6 +17,8 @@
 template <typename T>
 class Shape
 {
+
+
 protected:
     Shape(glm::vec3 color) :
         m_pos_lq(0),
@@ -22,7 +28,16 @@ protected:
         m_proj_lq(3),
         m_color_lq(4),
         m_color(color),
-        m_interleavedStride(24)
+        m_interleavedStride(24),
+        m_direction_lq(6),
+        m_dir_ambient_lq(7),
+        m_dir_diffuse_lq(8),
+        m_dir_specular_lq(9),
+        m_gouraud(false),
+        m_ka(0.1),
+        m_kd(0.9),
+        m_ks(0.3),
+        m_alpha(10)
     {}
 
     virtual ~Shape() {
@@ -30,6 +45,36 @@ protected:
         std::cout << "Deleting VBOs." << std::endl;
         glDeleteBuffers(1, &_vboID);
         glDeleteBuffers(1, &_iboID);
+    }
+
+    void light(std::vector<DirectionalLight> dirSources, std::vector<PointLight> pointSources) {
+        for (auto& s : dirSources) {
+            glm::vec3 direction = s.getDirection();
+            glm::vec3 ambient = s.getAmbient();
+            glm::vec3 diffuse = s.getDiffuse();
+            glm::vec3 specular = s.getSpecular();
+            glUniform3fv(m_direction_lq, 1, glm::value_ptr(direction));
+            glUniform3fv(m_dir_ambient_lq, 1, glm::value_ptr(ambient));
+            glUniform3fv(m_dir_diffuse_lq, 1, glm::value_ptr(diffuse));
+            glUniform3fv(m_dir_specular_lq, 1, glm::value_ptr(specular));
+        }
+
+        unsigned int it = 0;
+        for (auto& s : pointSources) {
+            glm::vec3 position = s.getPosition();
+            glm::vec3 ambient = s.getAmbient();
+            glm::vec3 diffuse = s.getDiffuse();
+            glm::vec3 specular = s.getSpecular();
+            glm::vec3 attenuation = s.getAttenuation();
+            glUniform3fv(m_pointLight_position_lq + it, 1, glm::value_ptr(position));
+            glUniform3fv(m_pointLight_ambient_lq + it, 1, glm::value_ptr(ambient));
+            glUniform3fv(m_pointLight_diffuse_lq + it, 1, glm::value_ptr(diffuse));
+            glUniform3fv(m_pointLight_specular_lq + it, 1, glm::value_ptr(specular));
+            glUniform3fv(m_pointLight_attConst_lq + it, 1, glm::value_ptr(attenuation.x));
+            glUniform3fv(m_pointLight_attLin_lq + it, 1, glm::value_ptr(attenuation.y));
+            glUniform3fv(m_pointLight_attQuad_lq + it, 1, glm::value_ptr(attenuation.z));
+            it += 7;
+        }
     }
 
     virtual void init() {
@@ -124,8 +169,23 @@ protected:
         m_normals.push_back(nz);
     }
 
-    void bindVBO() {
+    void buildInterleavedVertices() {
+        size_t vertices = m_vertices.size();
+        assert(vertices == m_normals.size());
 
+        m_interleavedVertices.clear();
+        for (int i = 0; i < vertices; i += 3) {
+            m_interleavedVertices.push_back(m_vertices[i]);
+            m_interleavedVertices.push_back(m_vertices[i+1]);
+            m_interleavedVertices.push_back(m_vertices[i+2]);
+
+            m_interleavedVertices.push_back(m_normals[i]);
+            m_interleavedVertices.push_back(m_normals[i+1]);
+            m_interleavedVertices.push_back(m_normals[i+2]);
+        }
+    }
+
+    void bindVBO() {
         // bind VBOs
         glBindBuffer(GL_ARRAY_BUFFER, _vboID);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _iboID);
@@ -137,8 +197,13 @@ protected:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+
     static GLuint m_vaoID;
     static int m_numObjects;
+
+    float m_ka, m_kd, m_ks, m_alpha;
+
+    bool m_gouraud;
 
 private:
     virtual void createVertices() = 0;
@@ -163,6 +228,11 @@ private:
     const GLuint m_view_lq;
     const GLuint m_proj_lq;
     const GLuint m_color_lq;
+
+    const GLuint m_direction_lq;
+    const GLuint m_dir_ambient_lq;
+    const GLuint m_dir_diffuse_lq;
+    const GLuint m_dir_specular_lq;
 };
 
 template <typename T> int Shape<T>::m_numObjects(0);

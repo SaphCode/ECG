@@ -14,7 +14,9 @@ GeomShape::Cylinder::Cylinder(glm::vec3 center, float radius, float height, glm:
 	m_sectorCount(sectorCount)
 {
 	createVertices();
+	createNormals();
 	createIndices();
+	buildInterleavedVertices();
 
 
 	if (m_numObjects == 0) {
@@ -110,7 +112,7 @@ void GeomShape::Cylinder::createIndices()
 	mapping[0] = 0;
 	for (int i = 1; i < 2 * m_sectorCount + 1; i++) {
 		mapping[i] = i + (i - 1);
-		std::cout << "(" << i << " -> " << mapping[i] << ")" << std::endl;
+		//std::cout << "(" << i << " -> " << mapping[i] << ")" << std::endl;
 	}
 	mapping[2 * m_sectorCount + 1] = 2 * 2 * m_sectorCount + 1;
 

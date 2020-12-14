@@ -13,6 +13,8 @@ GeomShape::Rectangle::Rectangle(glm::vec3 center, float width, float height, flo
 	createNormals();
 	createIndices();
 
+	buildInterleavedVertices();
+
 	if (m_numObjects == 0) {
 		std::cout << "Generating VAO for Rectangle." << std::endl;
 		glGenVertexArrays(1, &m_vaoID);

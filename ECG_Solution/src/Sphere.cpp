@@ -13,7 +13,9 @@ GeomShape::Sphere::Sphere(glm::vec3 center, float radius, glm::vec3 color, glm::
 	m_stackCount(stackCount)
 {
 	createVertices();
+	createNormals();
 	createIndices();
+	buildInterleavedVertices();
 
 	if (m_numObjects == 0) {
 		std::cout << "Generating VAO for Sphere." << std::endl;
